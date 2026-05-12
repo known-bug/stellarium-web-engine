@@ -1043,10 +1043,12 @@ static void planet_render_label(
     const double white[4] = {1, 1, 1, 1};
     double s, radius;
     double pos[3];
+    double observed[4], az, alt;
     const char *name;
     bool selected = core->selection && &planet->obj == core->selection;
     double pvo[2][3];
     char buf[256];
+    char label_buf[256];
     snprintf(buf, sizeof(buf), "NAME %s", planet->name);
     name = skycultures_get_label(buf, buf, sizeof(buf));
     if (!name)
@@ -1054,6 +1056,15 @@ static void planet_render_label(
 
     planet_get_pvo(planet, painter->obs, pvo);
     vec3_copy(pvo[0], pos);
+
+    // Convert to observed frame to get altitude
+    double pvo4[4] = {pvo[0][0], pvo[0][1], pvo[0][2], 1.0};
+    convert_framev4(painter->obs, FRAME_ICRF, FRAME_OBSERVED, pvo4, observed);
+    vec3_to_sphe(observed, &az, &alt);
+    double alt_deg = alt * DR2D;
+
+    // Format label with altitude in brackets
+    snprintf(label_buf, sizeof(label_buf), "%s (%.1f°)", name, alt_deg);
 
     // Radius on screen in pixel.
     radius = asin(planet->radius_m * DM2AU / vec3_norm(pvo[0]));
@@ -1064,7 +1075,7 @@ static void planet_render_label(
     s = point_size * 0.9;
     s = fmax(s, radius);
 
-    labels_add_3d(name, FRAME_ICRF, pos,
+    labels_add_3d(label_buf, FRAME_ICRF, pos,
                   false, s + 4, FONT_SIZE_BASE,
                   selected ? white : label_color, 0, 0,
                   TEXT_SEMI_SPACED | TEXT_BOLD | (selected ? 0 : TEXT_FLOAT),

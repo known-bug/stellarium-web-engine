@@ -25,7 +25,59 @@ static int pointer_init(obj_t *obj, json_value *args)
     return 0;
 }
 
+// Pulsating red concentric circle implementation
 static int pointer_render(obj_t *obj, const painter_t *painter_)
+{
+    double win_pos[2], win_size[2], angle;
+    const double T = 1.5;    // Animation period (seconds).
+    double r, pulse, alpha;
+    double size[2];
+    const pointer_t *pointer = (const pointer_t*)obj;
+    obj_t *selection = core->selection;
+    painter_t painter = *painter_;
+
+    if (!pointer->visible) return 0;
+    if (!selection) return 0;
+
+    // If the selection has a custom rendering method, we use it.
+    if (selection->klass->render_pointer) {
+        vec4_set(painter.color, 1, 1, 1, 1);
+        selection->klass->render_pointer(selection, &painter);
+        return 0;
+    }
+
+    obj_get_2d_ellipse(selection, painter.obs, painter.proj,
+                       win_pos, win_size, &angle);
+
+    // Base radius at object edge
+    r = fmax(win_size[0], win_size[1]) * 0.5;
+    r = fmax(r, 3);  // Minimum radius for tiny objects
+
+    // Ripple animation: circle expands outward and fades away, then repeats
+    // pulse goes from 0 to 1 over the animation period
+    pulse = fmod(sys_get_unix_time() / T, 1.0);  // 0 to 1, sawtooth wave
+
+    // Radius expands from edge outward by 10 pixels
+    r += pulse * 10;
+
+    // Alpha fades from 1.0 to 0.0 as circle expands
+    alpha = 1.0 - pulse;
+
+    // Set red color with fading alpha
+    vec4_set(painter.color, 1, 0, 0, alpha);
+    painter.lines.width = 4;
+
+    // Draw the expanding/fading circle
+    size[0] = r;
+    size[1] = r;
+    paint_2d_ellipse(&painter, NULL, 0, win_pos, size, NULL);
+
+    return 0;
+}
+
+#if 0
+// Original implementation: four strokes around the object
+static int pointer_render_old(obj_t *obj, const painter_t *painter_)
 {
     int i;
     double win_pos[2], win_size[2], angle;
@@ -69,6 +121,7 @@ static int pointer_render(obj_t *obj, const painter_t *painter_)
     }
     return 0;
 }
+#endif
 
 /*
  * Meta class declarations.
