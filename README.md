@@ -1,3 +1,25 @@
+Knownbug fork
+=============
+
+This repository is a fork of [Stellarium Web Engine](https://github.com/Stellarium/stellarium-web-engine)
+maintained by **Knownbug Ltd** (company no. 17087487, registered in England &
+Wales) for the version of the engine running at <https://knownbug.app>.
+
+Published in compliance with [GNU AGPL-3.0](LICENSE-AGPL-3.0.txt) §§ 5 and 13.
+
+- **Upstream**: <https://github.com/Stellarium/stellarium-web-engine> — the
+  canonical source of truth. Issues with the engine itself should be filed
+  there.
+- **Modifications from upstream**: see [MODIFICATIONS.md](MODIFICATIONS.md)
+  for the list.
+- **Original Stellarium Web Engine copyright** by Stellarium Labs SRL and
+  contributors. All original copyright notices in source files are preserved.
+
+Issues specific to the Knownbug deployment can be filed in this repository.
+For other matters, contact <hello@knownbug.app>.
+
+---
+
 Stellarium Web Engine
 =====================
 
